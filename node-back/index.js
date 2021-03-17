@@ -1,9 +1,12 @@
 const express = require('express');
 const app = express();
+const sqlite3 = require('sqlite3').verbose();
+//controller for router for interacting with database
+let messageRoute = require("./controllers/messages")
 
-app.get('/', (request, response) => {
-    response.send('<h1>Hello World!</h1>')
-});
+app.use(express.json())
+//notice its localhost/api
+app.use('/api',messageRoute);
 
 const PORT = 3001;
 app.listen(PORT, () => {
