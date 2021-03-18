@@ -1,6 +1,12 @@
-let router = require('express').Router()
+const { response } = require('express');
+
+let router = require('express').Router();
 const sqlite3 = require('sqlite3').verbose();
 let db = new sqlite3.Database('./data/messageApp.db');
+
+let urlGenerator = require("../helpers/urlGenerator");
+
+const urlLength = 30;
 
 //get all data from sql and dislay in json format
 router.get('/', async (req, res) => {
@@ -17,7 +23,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     //crymessage is a bad paramater name, can be changed in sql
     const cryptedMessage = {
-        'url': req.body.url,
+        'url': urlGenerator(urlLength),
         'crymessage': req.body.message
     };
     //did this with some string formatting
@@ -30,10 +36,11 @@ router.post('/', async (req, res) => {
     res.json('Postman did magic, now in SQL');
     });
 });
+
 //get a single page based on its url
 router.get('/:url', async (req, res) => {
     let getUrlSQL = 'SELECT * FROM messages WHERE url = ?';
-    //get url fromt request
+    //get url from request
     const url = req.params.url;
     db.get(getUrlSQL, [url], (err, row) => {
         if (err) {
@@ -42,4 +49,16 @@ router.get('/:url', async (req, res) => {
         res.json(row);
     });
 })
+
+router.delete("/:url", async (req, res) => {
+    const url = req.params.url;
+    let deleteUrlSQL = 'DELETE FROM messages WHERE url = ?';
+    db.run(deleteUrlSQL, url, function(err) {
+        if (err) {
+            res.json({err});
+        }
+    res.json('Postman did magic, now deleted from SQL');
+    });
+})
+
 module.exports = router;
