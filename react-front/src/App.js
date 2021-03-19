@@ -5,7 +5,7 @@ import {
 } from 'react-router-dom';
 
 import messageService from './services/messages';
-import {messageDisplay} from './components/messageDisplay';
+import MessageDisplay from './components/messageDisplay';
 
 //dont bother checking this, just renders the messages into frontend.
 function App() {
@@ -24,13 +24,13 @@ function App() {
       <div className="App">
         <Switch>
           <Route path = "/:id">
-            {messageDisplay(messages,messageMatch)}
+            {MessageDisplay(messages,messageMatch)}
           </Route>
         </Switch>
       </div>
     );
   }
   else { return <div>loading...</div> }
-  }
+}
 
 export default App;

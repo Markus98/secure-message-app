@@ -2,10 +2,11 @@ const { response } = require('express');
 
 let router = require('express').Router();
 const sqlite3 = require('sqlite3').verbose();
-let db = new sqlite3.Database('./data/messageApp.db');
+let db = new sqlite3.Database('./data/secureMessage.db');
 
 let urlGenerator = require("../helpers/urlGenerator");
 
+//could be also given from the frontend
 const urlLength = 30;
 
 //get all data from sql and dislay in json format
@@ -21,15 +22,18 @@ router.get('/', async (req, res) => {
 
 //post a single message (the url wont be needed in the future, should be randomly generated either here or frontend)
 router.post('/', async (req, res) => {
-    //crymessage is a bad paramater name, can be changed in sql
-    const cryptedMessage = {
-        'url': urlGenerator(urlLength),
-        'crymessage': req.body.message
-    };
-    //did this with some string formatting
-    let instertSQL = 'INSERT INTO messages(url, crymessage) VALUES ("'+cryptedMessage.url+'","'+cryptedMessage.crymessage +'")';
+    const checkMessage = (body) => {
+        if (body.password) {
+            return 'INSERT INTO messages(url, message, password) VALUES ("'+urlGenerator(urlLength)+'","'+body.message +'","'+body.password + '")';
+        }
+        else {
+            return 'INSERT INTO messages(url, message) VALUES ("'+urlGenerator(urlLength)+'","'+body.message +'")';
+        }
+    }
+    let insertSQL = checkMessage(req.body);
+    console.log(insertSQL);
     //should catch errors
-    db.run(instertSQL, function(err) {
+    db.run(insertSQL , function(err) {
         if (err) {
             res.json({err});
         }
