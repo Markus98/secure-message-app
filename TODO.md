@@ -1,0 +1,5 @@
+- [ ] Make backend interface with new sql schema
+- [ ] Fix obvious SQL injection flaw
+- [ ] Encrypt messages to database according to readme in backend
+- [ ] URL generation switch to crypto package?
+- [ ] https?
