@@ -19,7 +19,7 @@ function App() {
   }, [messages.length]);
 
   const messageMatch = useRouteMatch('/:id');
-  
+  //crashes on wrong id, since no way to know if messagematch exists
   if (messages.length>0){
     return (
       <div className='App'>
@@ -27,7 +27,7 @@ function App() {
           <Route path = '/:id'>
             <MessageView messages = {messages} messageMatch = {messageMatch}/>
           </Route>
-          <Route path = '/'>
+          <Route path = '/homepage'>
             <MessageForm />
           </Route>
         </Switch>

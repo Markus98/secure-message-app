@@ -19,7 +19,7 @@ const MessageView = ({messages, messageMatch}) => {
         if (message.password===passwordInput) {
             setShowMessage(true);
         }
-            setPasswordInput('');
+        setPasswordInput('');
         } catch(exception) {
         console.log(exception);
         }

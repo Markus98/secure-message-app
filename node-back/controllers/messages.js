@@ -23,24 +23,24 @@ router.get('/', async (req, res) => {
 //post a single message (the url wont be needed in the future, should be randomly generated either here or frontend)
 router.post('/', async (req, res) => {
     const url = urlGenerator(urlLength);
-    const checkMessage = (body) => {
-        if (body.password) {
-            return 'INSERT INTO messages(url, message, password) VALUES ("'+ url +'","'+body.message +'","'+body.password + '")';
-        }
-        else {
-            return 'INSERT INTO messages(url, message) VALUES ("'+ url +'","'+body.message +'")';
-        }
-    }
-    let insertSQL = checkMessage(req.body);
     //should catch errors
-    db.run(insertSQL , function(err) {
-        if (err) {
-            res.json({err});
-        }
+    if (req.body.password) {
+        db.run('INSERT INTO messages(url, message, password) VALUES ( ? , ? , ? )', [url, req.body.message, req.body.password], function(err) {
+            if (err) {
+                res.json({err});
+            }
+        });
+    }
+    else {
+        db.run('INSERT INTO messages(url, message) VALUES ( ? , ? )', [url, req.body.message], function(err) {
+            if (err) {
+                res.json({err});
+            }
+        });
+    }
     //returns the url to frontend
     res.json(url);
     });
-});
 
 //get a single page based on its url
 router.get('/:url', async (req, res) => {
