@@ -25,7 +25,7 @@ const MessageView = ({messages, messageMatch}) => {
         }
     }
     //form where you enter the password
-    const passwordForm = (password) => {
+    const passwordForm = () => {
       return (<form name='passwordForm' onSubmit={handlePassword}> 
         <label>
           <h3>This file requires a password to access</h3>
@@ -43,7 +43,7 @@ const MessageView = ({messages, messageMatch}) => {
         return (<h2> {message.message} </h2>);
     }
     else {
-        return passwordForm(message.password);
+        return passwordForm();
     }
   }
 
