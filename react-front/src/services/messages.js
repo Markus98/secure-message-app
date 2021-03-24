@@ -6,4 +6,13 @@ const get_messages = () => {
     return request.then(response => response.data);
 }
 
-export default {get_messages};
+const create_message = async newObject => {
+    const response = await axios.post(baseURL, newObject);
+    return response.data;
+}
+
+const messages = {
+    get_messages, 
+    create_message
+}
+export default messages;

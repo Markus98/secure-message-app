@@ -22,22 +22,23 @@ router.get('/', async (req, res) => {
 
 //post a single message (the url wont be needed in the future, should be randomly generated either here or frontend)
 router.post('/', async (req, res) => {
+    const url = urlGenerator(urlLength);
     const checkMessage = (body) => {
         if (body.password) {
-            return 'INSERT INTO messages(url, message, password) VALUES ("'+urlGenerator(urlLength)+'","'+body.message +'","'+body.password + '")';
+            return 'INSERT INTO messages(url, message, password) VALUES ("'+ url +'","'+body.message +'","'+body.password + '")';
         }
         else {
-            return 'INSERT INTO messages(url, message) VALUES ("'+urlGenerator(urlLength)+'","'+body.message +'")';
+            return 'INSERT INTO messages(url, message) VALUES ("'+ url +'","'+body.message +'")';
         }
     }
     let insertSQL = checkMessage(req.body);
-    console.log(insertSQL);
     //should catch errors
     db.run(insertSQL , function(err) {
         if (err) {
             res.json({err});
         }
-    res.json('Postman did magic, now in SQL');
+    //returns the url to frontend
+    res.json(url);
     });
 });
 
