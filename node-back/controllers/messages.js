@@ -23,21 +23,16 @@ router.get('/', async (req, res) => {
 //post a single message (the url wont be needed in the future, should be randomly generated either here or frontend)
 router.post('/', async (req, res) => {
     const url = urlGenerator(urlLength);
+    let password = req.body.password;
     //should catch errors
-    if (req.body.password) {
-        db.run('INSERT INTO messages(url, message, password) VALUES ( ? , ? , ? )', [url, req.body.message, req.body.password], function(err) {
-            if (err) {
-                res.json({err});
-            }
-        });
+    if (!password) {
+        password = null;
     }
-    else {
-        db.run('INSERT INTO messages(url, message) VALUES ( ? , ? )', [url, req.body.message], function(err) {
-            if (err) {
-                res.json({err});
-            }
-        });
-    }
+    db.run('INSERT INTO messages(url, message, password) VALUES ( ? , ? , ? )', [url, req.body.message, req.body.password], function(err) {
+        if (err) {
+            res.json({err});
+        }
+    });
     //returns the url to frontend
     res.json(url);
     });
