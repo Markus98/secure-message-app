@@ -27,7 +27,7 @@ function App() {
           <Route path = '/:id'>
             <MessageView messages = {messages} messageMatch = {messageMatch}/>
           </Route>
-          <Route path = '/homepage'>
+          <Route path = '/'>
             <MessageForm />
           </Route>
         </Switch>
