@@ -1,14 +1,15 @@
 const crypto = require('crypto');
 
-const decipherAlgorithm = process.env.DECIPHER_ALGORITHM;
-const hashAlgorithm = process.env.HASH_ALGORITHM;
-const pepper = process.env.PEPPER_STRING; // long random constant stored in secure place
+const decipherAlgorithm = process.env.DECIPHER_ALGORITHM || 'AES-256-CTR';
+const hashAlgorithm = process.env.HASH_ALGORITHM || 'SHA256';
+const pepper = process.env.PEPPER_STRING || 'pepperforpassword'; // long random constant stored in secure place
+const hashNumber = process.env.HASH_NUMBER || 1;
 
 // hash the password with the provided salt
 const hashPassword = (password, salt) => {
     // generate password hash
     let key = pepper + password + salt;
-    for(i = 0; i < process.env.HASH_NUMBER; i++) {
+    for(i = 0; i < hashNumber; i++) {
         key = crypto.createHash(hashAlgorithm).update(key).digest();
     }
     return key;
