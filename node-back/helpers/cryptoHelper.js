@@ -55,4 +55,4 @@ const {salt, hash} = encryptMsg('password', msg);
 console.log(decryptMsg('password', salt, hash));
 */
 
-module.exports = {encryptMsg, decryptMsg, hashSHA256};
+module.exports = {encryptMsg, decryptMsg, hashSHA256, hashPassword};

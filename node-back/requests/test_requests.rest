@@ -1,0 +1,20 @@
+### post new message with all params
+POST http://localhost:3001/api HTTP/1.1
+content-type: application/json
+
+{
+    "message": "This is a test secret message",
+    "password": "12345",
+    "lifetime": 1000000,
+    "readLimit": 10
+}
+
+### without password
+POST http://localhost:3001/api HTTP/1.1
+content-type: application/json
+
+{
+    "message": "This is a test secret message",
+    "lifetime": 1000000,
+    "readLimit": 10
+}

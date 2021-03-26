@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
+const { encryptMsg, decryptMsg, hashSHA256, hashPassword } = require('../helpers/cryptoHelper');
 
 // Check if database file exists
 const dbPath = './data/secureMessage.db';
@@ -31,22 +32,48 @@ router.get('/', async (req, res) => {
     });
 });
 
-//post a single message (the url wont be needed in the future, should be randomly generated either here or frontend)
+//post a single message
+const insertMessageQuery = 'INSERT INTO messages(url_hash, message_cipher, password_hash, salt, timestamp, lifetime, read_limit, init_vector) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 router.post('/', async (req, res) => {
-    const url = urlGenerator(urlLength);
-    let password = req.body.password;
-    //should catch errors
-    if (!password) {
-        password = null;
+    const password = req.body.password;
+    const message = req.body.message;
+    const lifetime = req.body.lifetime;
+    const readLimit = req.body.readLimit;
+    const generatedUrl = urlGenerator(urlLength);
+    const timestamp = new Date().getTime()
+
+    // if the request has no message, reject it
+    if (!message) {
+        res.sendStatus(400);
+        return
     }
-    db.run('INSERT INTO messages(url, message, password) VALUES ( ? , ? , ? )', [url, req.body.message, req.body.password], function(err) {
+
+    const urlHash = hashSHA256(generatedUrl);
+    // encrypt message with the password or url hash
+    const cipherObj = 
+        password ? encryptMsg(password, message) : encryptMsg(urlHash, message);
+    const passwordHash = password ? hashPassword(password) : null
+
+
+    db.run(insertMessageQuery, [
+        urlHash,
+        cipherObj.hash.content,
+        passwordHash,
+        cipherObj.salt,
+        timestamp,
+        lifetime,
+        readLimit,
+        cipherObj.hash.iv
+    ], (err) => {
         if (err) {
-            res.json({err});
+            console.log(err);
+            res.sendStatus(500);
+            return
         }
     });
     //returns the url to frontend
-    res.json(url);
-    });
+    res.json(generatedUrl);
+});
 
 //get a single page based on its url
 router.get('/:url', async (req, res) => {
