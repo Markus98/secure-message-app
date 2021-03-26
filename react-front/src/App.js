@@ -9,7 +9,6 @@ import MessageView from './components/MessageView';
 
 function App() {
   const msgURL = useRouteMatch('/:id');
-  console.log(msgURL);
   return (
     <div className='App'>
       <Switch>

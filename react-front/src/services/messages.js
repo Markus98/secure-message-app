@@ -1,6 +1,7 @@
 import axios from 'axios';
 const baseURL = 'http://localhost:3001/api/';
 
+// create message to the server, all parameters are optional except msg
 const create_message = async (msg, password, lifetime, readLimit) => {
     let jsonObj = {message: msg};
     if(password) {
@@ -30,12 +31,14 @@ const create_message = async (msg, password, lifetime, readLimit) => {
     }
 }
 
+// get message from the server, password is optional
+// returns if the message exist on the server
 const get_message = async (msgURL, password) => {
     try {
         console.log({password: password});
         const response = await axios.post(`${baseURL}${msgURL}`, {password: password});
         console.log(response);
-        response.data.exist = true;
+        response.data.exists = true;
         return response.data;
     } catch (error) {
         const status = error.response.status;
@@ -55,6 +58,7 @@ const get_message = async (msgURL, password) => {
     }
 }
 
+// deletes messgae from the server
 const delete_message = async (msgURL, password) => {
     // TODO
     console.log("delete_message has not been implemted");

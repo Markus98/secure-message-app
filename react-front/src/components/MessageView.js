@@ -6,7 +6,7 @@ const MessageView = ({url}) => {
   const [message, setMessage] = useState('');
   const [successful, setSuccess] = useState(false);
   const [exists, setExists] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handlePassword = ({ target }) => setPasswordInput(target.value);
 
@@ -15,6 +15,7 @@ const MessageView = ({url}) => {
     fetchMessage(passwordInput)
   }
 
+  // fetch the message in this url form the backend
   const fetchMessage = async (password) => {
     try {
       const data = await messageService.get_message(url, password);
@@ -30,7 +31,6 @@ const MessageView = ({url}) => {
       console.log(error);
     }
   }
-  console.log(`This sites URL: ${url}`);
   useEffect( () => fetchMessage(null), []);
 
   return loading ?

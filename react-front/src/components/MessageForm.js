@@ -8,7 +8,7 @@ const MessageForm = () => {
 
   const handleMessageCreate = async ({message, password}) => {
     try {
-      //the response from backend is the URL
+      //the response from backend is the URL to the message
       const data = await messageService.create_message(message, password, null, null);
       setUrl(data.generatedUrl);
     }
