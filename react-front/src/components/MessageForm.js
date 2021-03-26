@@ -10,7 +10,8 @@ const MessageForm = () => {
     try {
       //the response from backend is the URL to the message
       const data = await messageService.create_message(message, password, null, null);
-      setUrl(data.generatedUrl);
+      const fullUrl = window.location.protocol + '//' + window.location.host + '/' + data.generatedUrl;
+      setUrl(<a href={fullUrl}>{fullUrl}</a>);
     }
     catch(exception){
       console.log(exception);
@@ -37,7 +38,7 @@ const MessageForm = () => {
       <h4>If you do not want to use a password for extra protection, leave the field blank</h4>
       <form onSubmit={addMessage}>
         <div> message: <input id = 'message' value ={message} onChange={({ target }) => setMessage(target.value)}/></div>
-        <div> password:<input id = 'password' value = {password} onChange={({ target }) => setPassword(target.value)}/></div>
+        <div> password:<input id = 'password' value = {password} onChange={({ target }) => setPassword(target.value)} type="password"/></div>
         <button id = 'create-message' type="submit">create</button>
       </form>
       <h4> When the message has been created, the url will be shown below</h4>

@@ -49,7 +49,7 @@ const PasswordInput = ({onSubmit, passwordInput, handlePassword}) => {
       <label>
         <h3>This file requires a password to access</h3>
         <h4>Password:</h4>
-        <input type='text' value={passwordInput} onChange={handlePassword}/>
+        <input type='password' value={passwordInput} onChange={handlePassword}/>
       </label>
       <button id='enter-password' type='submit' >Submit</button>
     </form>
