@@ -1,8 +1,19 @@
-const { response } = require('express');
-
-let router = require('express').Router();
+const router = require('express').Router();
 const sqlite3 = require('sqlite3').verbose();
-let db = new sqlite3.Database('./data/secureMessage.db');
+const fs = require('fs');
+
+// Check if database file exists
+const dbPath = './data/secureMessage.db';
+let databaseExists = fs.existsSync(dbPath);
+
+const db = new sqlite3.Database(dbPath, (err) => {
+    // If database file did not exist, init with schema
+    if (!databaseExists) {
+        console.log("No database file found, initializing with base schema.");
+        const createSchemaQuery= fs.readFileSync('./data/sqlschema.sql').toString();
+        db.run(createSchemaQuery, err => { if (err) console.log(err) });
+    }
+});
 
 let urlGenerator = require("../helpers/urlGenerator");
 
