@@ -14,7 +14,18 @@ POST http://localhost:3001/api HTTP/1.1
 content-type: application/json
 
 {
-    "message": "This is a test secret message",
+    "message": "This is a test secret message without password",
     "lifetime": 1000000,
     "readLimit": 10
 }
+
+### get with password
+GET http://localhost:3001/api/pT-wTBeZobCKMKph3kthDeHgWJzjt4 HTTP/1.1
+content-type: application/json
+
+{
+    "password": "12345"
+}
+
+### get without password
+GET http://localhost:3001/api/PgUovKnwr6lJqNQ8gP3TOmpIUpSUaR HTTP/1.1

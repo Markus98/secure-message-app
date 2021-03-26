@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
 });
 
 //post a single message
-const insertMessageQuery = 'INSERT INTO messages(url_hash, message_cipher, password_hash, salt, timestamp, lifetime, read_limit, init_vector) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+const insertMessageQuery = 'INSERT INTO messages(url_hash, password_protected, message_cipher, password_hash, salt, timestamp, lifetime, read_limit, init_vector) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 router.post('/', async (req, res) => {
     const password = req.body.password;
     const message = req.body.message;
@@ -44,21 +44,19 @@ router.post('/', async (req, res) => {
 
     // if the request has no message, reject it
     if (!message) {
-        res.sendStatus(400);
-        return
+        return res.sendStatus(400);
     }
 
     const urlHash = hashSHA256(generatedUrl);
     // encrypt message with the password or url hash
     const cipherObj = 
         password ? encryptMsg(password, message) : encryptMsg(urlHash, message);
-    const passwordHash = password ? hashPassword(password) : null
-
 
     db.run(insertMessageQuery, [
         urlHash,
+        password !== undefined, // has password or not
         cipherObj.hash.content,
-        passwordHash,
+        cipherObj.key,
         cipherObj.salt,
         timestamp,
         lifetime,
@@ -67,24 +65,66 @@ router.post('/', async (req, res) => {
     ], (err) => {
         if (err) {
             console.log(err);
-            res.sendStatus(500);
-            return
+            return res.sendStatus(500);
         }
     });
     //returns the url to frontend
     res.json(generatedUrl);
 });
 
-//get a single page based on its url
+// Get a specific message
+const getMessageQuery = 'SELECT * FROM messages WHERE url_hash = ?';
 router.get('/:url', async (req, res) => {
-    let getUrlSQL = 'SELECT * FROM messages WHERE url = ?';
-    //get url from request
     const url = req.params.url;
-    db.get(getUrlSQL, [url], (err, row) => {
+    const password = req.body.password;
+
+    const urlHash = hashSHA256(url);
+
+    db.get(getMessageQuery, [urlHash], (err, row) => {
         if (err) {
-            res.json({err});
+            console.log(err);
+            return res.sendStatus(500);
         }
-        res.json(row);
+
+        // If url does not exist
+        if (row === undefined) {
+            return res.sendStatus(404);
+        }
+
+        const responseObj = {
+            "timestamp": row.timestamp,
+            "lifetime": row.lifetime,
+            "timesRead": row.times_read,
+            "readLimit": row.read_limit
+        };
+
+        const hashObj = {
+            iv: row.init_vector,
+            content: row.message_cipher
+        }
+
+        // check if the message requires a password
+        if (row.password_protected) {
+            // Send unauthorized if no password provided
+            if (!password) {
+                return res.sendStatus(401);
+            }
+
+            // Check if correct password 
+            // TODO: limit number of attempts
+            const receivedPasswordHash = hashPassword(password, row.salt);
+            if (receivedPasswordHash.toString() !== row.password_hash.toString()) {
+                return res.sendStatus(403);
+            }
+
+            const decipheredMessage = decryptMsg(password, row.salt, hashObj);
+            responseObj["message"] = decipheredMessage;
+            res.json(responseObj);
+        } else {
+            const decipheredMessage = decryptMsg(urlHash, row.salt, hashObj);
+            responseObj["message"] = decipheredMessage;
+            res.json(responseObj);
+        }
     });
 })
 

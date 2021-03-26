@@ -29,7 +29,14 @@ const encryptMsg = (password, msg) => {
     // encrypt the msg
     const encryptedMsg = Buffer.concat([cipher.update(msg), cipher.final()]);
     // Returning iv and encrypted msg
-    return {salt: salt, hash:{iv: iv.toString('hex'), content: encryptedMsg.toString('hex')}};
+    return {
+        salt, 
+        hash:{
+            iv: iv.toString('hex'), 
+            content: encryptedMsg.toString('hex')
+        },
+        key
+    };
 }
 
 // decrypt message using password, salt, inialization vector and content
