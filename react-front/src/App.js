@@ -5,36 +5,26 @@ import {
 } from 'react-router-dom';
 
 import messageService from './services/messages';
-import MessageForm from './components/MessageCreate';
+import MessageForm from './components/MessageForm';
 import MessageView from './components/MessageView';
 
 //dont bother checking this, just renders the messages into frontend.
 function App() {
 
-  const [messages, setMessages] = useState([]);
-  
-  useEffect(() => {
-    messageService.get_messages().then(messages => 
-      setMessages(messages));
-  }, [messages.length]);
-
   const messageMatch = useRouteMatch('/:id');
   //crashes on wrong id, since no way to know if messagematch exists
-  if (messages.length>0){
-    return (
-      <div className='App'>
-        <Switch>
-          <Route path = '/:id'>
-            <MessageView messages = {messages} messageMatch = {messageMatch}/>
-          </Route>
-          <Route path = '/'>
-            <MessageForm />
-          </Route>
-        </Switch>
-      </div>
-    );
-  }
-  else { return <div>loading...</div> }
+  return (
+    <div className='App'>
+      <Switch>
+        <Route path = '/:id'>
+          <MessageView messageMatch = {messageMatch}/>
+        </Route>
+        <Route path = '/'>
+          <MessageForm />
+        </Route>
+      </Switch>
+    </div>
+  );
 }
 
 export default App;

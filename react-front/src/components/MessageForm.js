@@ -6,11 +6,11 @@ const MessageForm = () => {
   const [password, setPassword] = useState('');
   const [url, setUrl] = useState(false);
 
-  const handleMessageCreate = async ({message,password}) => {
+  const handleMessageCreate = async ({message, password}) => {
     try {
       //the response from backend is the URL
-      const response_url = await messageService.create_message({ message, password});
-      setUrl(response_url);
+      const data = await messageService.create_message(message, password, null, null);
+      setUrl(data.generatedUrl);
     }
     catch(exception){
       console.log(exception);
@@ -45,6 +45,5 @@ const MessageForm = () => {
     </div>
   )
 }
-
 
 export default MessageForm;
