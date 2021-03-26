@@ -56,6 +56,7 @@ Required if message requires a password.
   {
     "timestamp": 1616761338528, // created on (unix time ms)
     "lifetime": 1000000, // set lifetime (ms)
+    "aliveTimeLeft": 38032, // lifetime remaining (ms)
     "timesRead": 0,
     "readLimit": 10,
     "message": "This is a test secret message"

@@ -23,7 +23,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 // POST a single message
-const insertMessageQuery = 'INSERT INTO messages(url_hash, password_protected, message_cipher, password_hash, salt, timestamp, lifetime, read_limit, init_vector) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+const insertMessageQuery = 'INSERT INTO messages(url_hash, password_protected, message_cipher, password_hash, salt, timestamp, lifetime, read_limit, init_vector) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);';
 router.post('/', async (req, res) => {
     const password = req.body.password;
     const message = req.body.message;
@@ -65,7 +65,9 @@ router.post('/', async (req, res) => {
 });
 
 // GET a specific message
-const getMessageQuery = 'SELECT * FROM messages WHERE url_hash = ?';
+const getMessageQuery = 'SELECT * FROM messages WHERE url_hash = ?;';
+const incrementReadNumberQuery = 'UPDATE messages SET times_read = times_read + 1 WHERE url_hash = ?;';
+const deleteMessageQuery = 'DELETE FROM messages WHERE url_hash = ?;';
 router.get('/:url', async (req, res) => {
     const url = req.params.url;
     const password = req.body.password;
@@ -83,10 +85,14 @@ router.get('/:url', async (req, res) => {
             return res.sendStatus(404);
         }
 
+        const timeAlive = new Date().getTime() - row.timestamp;
+        const aliveTimeLeft = row.lifetime ? row.lifetime - timeAlive : null;
+
         const responseObj = {
             "timestamp": row.timestamp,
             "lifetime": row.lifetime,
-            "timesRead": row.times_read,
+            "aliveTimeLeft": aliveTimeLeft,
+            "timesRead": row.times_read + 1,
             "readLimit": row.read_limit
         };
 
@@ -110,15 +116,39 @@ router.get('/:url', async (req, res) => {
             }
 
             responseObj["message"] = decryptMsg(password, row.salt, hashObj);
-            res.json(responseObj);
         } else {
+
             responseObj["message"] = decryptMsg(urlHash, row.salt, hashObj);
-            res.json(responseObj);
         }
+
+        // Increment read number and send reponse
+        db.run(incrementReadNumberQuery, [urlHash], (err) => {
+            if (err) {
+                console.log(err);
+                return res.sendStatus(500);
+            } else {
+                const readLimitReached = row.read_limit && responseObj.timesRead >= row.read_limit;
+                const lifeLimitReached = row.lifetime && timeAlive > row.lifetime;
+                // Delete row if read read limit reached or past lifetime
+                if (lifeLimitReached) {
+                    db.run(deleteMessageQuery, [urlHash], (err) => {
+                        if (err) console.log(err);
+                        return res.sendStatus(404);
+                    });
+                } else if (readLimitReached) {
+                    db.run(deleteMessageQuery, [urlHash], (err) => {
+                        if (err) console.log(err);
+                        return res.json(responseObj);
+                    });
+                } else {
+                    return res.json(responseObj);
+                }
+            }
+        });
     });
 });
 
-const deleteMessageQuery = 'DELETE FROM messages WHERE url_hash = ?';
+
 router.delete("/:url", async (req, res) => {
     const url = req.params.url;
 

@@ -5,7 +5,7 @@ content-type: application/json
 {
     "message": "This is a test secret message",
     "password": "12345",
-    "lifetime": 1000000,
+    "lifetime": 30000,
     "readLimit": 10
 }
 
@@ -19,8 +19,34 @@ content-type: application/json
     "readLimit": 10
 }
 
+### only message
+POST http://localhost:3001/api HTTP/1.1
+content-type: application/json
+
+{
+    "message": "This is a test secret message without password or limits"
+}
+
+### only lifetime
+POST http://localhost:3001/api HTTP/1.1
+content-type: application/json
+
+{
+    "message": "This is a test secret message without password or limits",
+    "lifetime": 45000
+}
+
+### only read limit
+POST http://localhost:3001/api HTTP/1.1
+content-type: application/json
+
+{
+    "message": "This is a test secret message without password or limits",
+    "readLimit": 20
+}
+
 ### get with password
-GET http://localhost:3001/api/pT-wTBeZobCKMKph3kthDeHgWJzjt4 HTTP/1.1
+GET http://localhost:3001/api/lTdVo3ZAPCSLQzajHg3v-z_nqtCX44 HTTP/1.1
 content-type: application/json
 
 {
@@ -28,4 +54,4 @@ content-type: application/json
 }
 
 ### get without password
-GET http://localhost:3001/api/PgUovKnwr6lJqNQ8gP3TOmpIUpSUaR HTTP/1.1
+GET http://localhost:3001/api/X8Kzz6iOIGuYRzrowZE0pcde4mb_wO HTTP/1.1
