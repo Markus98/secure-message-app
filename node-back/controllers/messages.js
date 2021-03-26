@@ -2,12 +2,18 @@ const router = require('express').Router();
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const { encryptMsg, decryptMsg, hashSHA256, hashPassword } = require('../helpers/cryptoHelper');
+const urlGenerator = require("../helpers/urlGenerator");
+
+//could be also given from the frontend
+const urlLength = 30;
+const dbPath = './data/secureMessage.db';
 
 // Check if database file exists
-const dbPath = './data/secureMessage.db';
-let databaseExists = fs.existsSync(dbPath);
+const databaseExists = fs.existsSync(dbPath);
 
+// Open database connection
 const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) throw (err);
     // If database file did not exist, init with schema
     if (!databaseExists) {
         console.log("No database file found, initializing with base schema.");
@@ -16,23 +22,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
 });
 
-let urlGenerator = require("../helpers/urlGenerator");
-
-//could be also given from the frontend
-const urlLength = 30;
-
-//get all data from sql and dislay in json format
-router.get('/', async (req, res) => {
-    db.all('SELECT * FROM messages', (err, rows) => {
-        if (err) {
-            res.json({err});
-        }
-        //returns all rows
-        res.json(rows);
-    });
-});
-
-//post a single message
+// POST a single message
 const insertMessageQuery = 'INSERT INTO messages(url_hash, password_protected, message_cipher, password_hash, salt, timestamp, lifetime, read_limit, init_vector) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 router.post('/', async (req, res) => {
     const password = req.body.password;
@@ -69,10 +59,12 @@ router.post('/', async (req, res) => {
         }
     });
     //returns the url to frontend
-    res.json(generatedUrl);
+    res.json({
+        generatedUrl
+    });
 });
 
-// Get a specific message
+// GET a specific message
 const getMessageQuery = 'SELECT * FROM messages WHERE url_hash = ?';
 router.get('/:url', async (req, res) => {
     const url = req.params.url;
@@ -117,26 +109,25 @@ router.get('/:url', async (req, res) => {
                 return res.sendStatus(403);
             }
 
-            const decipheredMessage = decryptMsg(password, row.salt, hashObj);
-            responseObj["message"] = decipheredMessage;
+            responseObj["message"] = decryptMsg(password, row.salt, hashObj);
             res.json(responseObj);
         } else {
-            const decipheredMessage = decryptMsg(urlHash, row.salt, hashObj);
-            responseObj["message"] = decipheredMessage;
+            responseObj["message"] = decryptMsg(urlHash, row.salt, hashObj);
             res.json(responseObj);
         }
     });
-})
+});
 
+const deleteMessageQuery = 'DELETE FROM messages WHERE url_hash = ?';
 router.delete("/:url", async (req, res) => {
     const url = req.params.url;
-    let deleteUrlSQL = 'DELETE FROM messages WHERE url = ?';
-    db.run(deleteUrlSQL, url, function(err) {
-        if (err) {
-            res.json({err});
-        }
-    res.json('Postman did magic, now deleted from SQL');
-    });
-})
+
+    res.sendStatus(501); // Not yet implemented
+    // db.run(deleteMessageQuery, url, function(err) {
+    //     if (err) {
+    //     }
+    // res.json('Postman did magic, now deleted from SQL');
+    // });
+});
 
 module.exports = router;
