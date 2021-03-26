@@ -14,10 +14,11 @@ const create_message = async (msg, password, lifetime, readLimit) => {
     {
         jsonObj.readLimit = readLimit;
     }
+    console.log(jsonObj);
     try {
         const response = await axios.post(baseURL, jsonObj);
         console.log(response);
-
+        return response.data;
     } catch (error) {
         const status = error.response.status;
         if(status === 400) {
@@ -31,7 +32,8 @@ const create_message = async (msg, password, lifetime, readLimit) => {
 
 const get_message = async (msgURL, password) => {
     try {
-        const response = await axios.get(`${baseURL}/{msgURL}`, {password: password});
+        console.log({password: password});
+        const response = await axios.post(`${baseURL}${msgURL}`, {password: password});
         console.log(response);
         response.data.exist = true;
         return response.data;
@@ -39,13 +41,13 @@ const get_message = async (msgURL, password) => {
         const status = error.response.status;
         if(status === 404) {
             console.log(`No message exist with URL: ${msgURL}`);
-            return {exist: false};
+            return {exists: false};
         } else if(status === 401) {
             console.log(`Message with URL: ${msgURL} is password protected`);
-            return {exist: true};
+            return {exists: true};
         } else if(status === 403) {
             console.log('Invalid password');
-            return {exist: true};
+            return {exists: true};
         } else {
             console.log(error);
             return null;

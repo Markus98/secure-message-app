@@ -68,7 +68,7 @@ router.post('/', async (req, res) => {
 const getMessageQuery = 'SELECT * FROM messages WHERE url_hash = ?;';
 const incrementReadNumberQuery = 'UPDATE messages SET times_read = times_read + 1 WHERE url_hash = ?;';
 const deleteMessageQuery = 'DELETE FROM messages WHERE url_hash = ?;';
-router.get('/:url', async (req, res) => {
+router.post('/:url', async (req, res) => {
     const url = req.params.url;
     const password = req.body.password;
 

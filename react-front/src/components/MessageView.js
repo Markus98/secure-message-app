@@ -1,45 +1,47 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import messageService from '../services/messages'
 
-const MessageView = (URL) => {
+const MessageView = ({url}) => {
+  const [passwordInput, setPasswordInput] = useState('');
+  const [message, setMessage] = useState('');
+  const [successful, setSuccess] = useState(false);
+  const [exists, setExists] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    const [passwordInput, setPasswordInput] = useState('');
-    const [message, setMessage] = useState('');
-    const [successful, setSuccess] = useState(false);
-    const [exists, setExists] = useState(false);
-    const [loading, setLoading] = useState(false);
-  
-    const handlePassword = ({ target }) => setPasswordInput(target.value);
+  const handlePassword = ({ target }) => setPasswordInput(target.value);
 
-    const submitPassword = async (event) => {
-      event.preventDefault()
-      fetchMessage(passwordInput)
-    }
-
-    const fetchMessage = async (password) => {
-      try {
-        const data = await messageService.get_message(URL, password);
-        if(data.exists) {
-          setExists(true);
-        }
-        setLoading(false);
-        setMessage(data.message); // TODO other parameters
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    fetchMessage(null);
-
-    return loading ?
-      (<h2>Getting the message</h2>)
-      : !exists ?
-      (<h2>This URL does not contain any messages</h2>)
-      : successful ?
-      (<ShowMsg msg={message}/>)
-      :
-      (<PasswordInput onSubmit={submitPassword} handlePassword={handlePassword}passwordInput={passwordInput}/>)
+  const submitPassword = async (event) => {
+    event.preventDefault()
+    fetchMessage(passwordInput)
   }
+
+  const fetchMessage = async (password) => {
+    try {
+      const data = await messageService.get_message(url, password);
+      if(data.exists) {
+        setExists(true);
+      }
+      if(data.message) {
+        setMessage(data.message); // TODO other parameters
+        setSuccess(true);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  console.log(`This sites URL: ${url}`);
+  useEffect( () => fetchMessage(null), []);
+
+  return loading ?
+    (<h2>Getting the message</h2>)
+    : !exists ?
+    (<h2>This URL does not contain any messages</h2>)
+    : successful ?
+    (<ShowMsg msg={message}/>)
+    :
+    (<PasswordInput onSubmit={submitPassword} handlePassword={handlePassword}passwordInput={passwordInput}/>)
+}
 
 const PasswordInput = ({onSubmit, passwordInput, handlePassword}) => {
   return (

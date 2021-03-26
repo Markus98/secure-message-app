@@ -8,12 +8,13 @@ import MessageForm from './components/MessageForm';
 import MessageView from './components/MessageView';
 
 function App() {
-  const messageMatch = useRouteMatch('/:id');
+  const msgURL = useRouteMatch('/:id');
+  console.log(msgURL);
   return (
     <div className='App'>
       <Switch>
         <Route path = '/:id'>
-          <MessageView messageMatch = {messageMatch}/>
+          <MessageView url={msgURL ? msgURL.url.substring(1) : null}/>
         </Route>
         <Route path = '/'>
           <MessageForm />
