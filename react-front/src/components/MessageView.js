@@ -31,7 +31,7 @@ const MessageView = ({url}) => {
         setMessage(data.message); 
         //define this as an array to save space? Could also be a dictionary for better mobility
         setReadLimit({timesread: data.timesRead, readlimit: data.readLimit})
-        //timer is currently not real time
+        //timer is currently not real time, to change input from seconds remove /1000 and do something
         setLifeTime({timeleft: (data.lifetime - data.aliveTimeLeft)/1000, timetotal: data.lifetime/1000})
         //turns it into string timestamp
         setTimeStamp((new Date(data.timestamp)).toString())
