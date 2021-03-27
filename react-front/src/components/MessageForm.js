@@ -4,12 +4,15 @@ import messageService from '../services/messages';
 const MessageForm = () => {
   const [message, setMessage] = useState('');
   const [password, setPassword] = useState('');
+  const [lifeTime, setLifeTime] = useState(100);
+  const [readLimit, setReadLimit] = useState(10);
   const [url, setUrl] = useState(false);
 
-  const handleMessageCreate = async ({message, password}) => {
+  const handleMessageCreate = async ({message, password,lifeTime,readLimit}) => {
     try {
       //the response from backend is the URL to the message
-      const data = await messageService.create_message(message, password, null, null);
+      //lifetime is timed by 100 because its in milliseconds, could be done earlier too
+      const data = await messageService.create_message(message, password, lifeTime*1000, readLimit);
       const fullUrl = window.location.protocol + '//' + window.location.host + '/' + data.generatedUrl;
       setUrl(<a href={fullUrl}>{fullUrl}</a>);
     }
@@ -24,7 +27,9 @@ const MessageForm = () => {
     if (message !== '') {
       handleMessageCreate({
         message: message,
-        password: password
+        password: password,
+        lifeTime: lifeTime,
+        readLimit: readLimit
       });
       setMessage('');
     }
@@ -39,6 +44,8 @@ const MessageForm = () => {
       <form onSubmit={addMessage}>
         <div> message: <input id = 'message' value ={message} onChange={({ target }) => setMessage(target.value)}/></div>
         <div> password:<input id = 'password' value = {password} onChange={({ target }) => setPassword(target.value)} type="password"/></div>
+        <div> lifetime: <input id = 'lifetime' value ={lifeTime} onChange={({ target }) => setLifeTime(target.value)} type = 'number' /></div>
+        <div> readlimit:<input id = 'readlimit' value = {readLimit} onChange={({ target }) => setReadLimit(target.value)} type="number"/></div>
         <button id = 'create-message' type="submit">create</button>
       </form>
       <h4> When the message has been created, the url will be shown below</h4>
