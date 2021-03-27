@@ -72,9 +72,9 @@ const ShowMsg = ({msg,readlimit,lifetime,timestamp}) => {
     <>
       <h2>Your secret message:</h2>
       <h4>{msg}</h4>
-      <p>Times this message has been accessed {readlimit.timesread}/{readlimit.readlimit} </p>
+      <p>This message has been accessed {readlimit.timesread}/{readlimit.readlimit} times</p>
       <p>Seconds left until message is deleted {Math.round(lifetime.timeleft)}/{lifetime.timetotal} </p>
-      <p>Date created {timestamp} </p>
+      <p>Message created {timestamp} </p>
     </>
   )
 }
