@@ -98,7 +98,6 @@ const MessageForm = () => {
         min = '0' max = '60' disabled = {inputDisabled.lifetime}/>
         <input type='checkbox' checked={!inputDisabled.lifetime} onChange={e => handleCheckChange(e,'lifetime')}/></div>
         
-
         <div> ReadLimit:</div><div><input id = 'readlimit' value = {readLimit} onChange={({ target }) => setReadLimit(target.value)} type="number" 
         min = '1' max = '10000' disabled = {inputDisabled.readlimit}/>
         <input type='checkbox' checked={!inputDisabled.readlimit} onChange={e => handleCheckChange(e,'readlimit')}/></div>
