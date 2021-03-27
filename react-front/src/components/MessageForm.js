@@ -6,7 +6,7 @@ const defaultReadLimit = 10;
 
 const MessageForm = () => {
   const [message, setMessage] = useState('');
-  const [inputEnabled, setInputEnabled] = useState({password: false, lifetime: false, readlimit: false});
+  const [inputDisabled, setinputDisabled] = useState({password: true, lifetime: true, readlimit: true});
   const [password, setPassword] = useState('');
   const [lifeTime, setLifeTime] = useState(defaultLifeTime);
   const [readLimit, setReadLimit] = useState(defaultReadLimit);
@@ -49,15 +49,15 @@ const MessageForm = () => {
   //does different stuff depending on the value checked
   const handleCheckChange = (e,checkType) => {
     if (checkType === 'password') {
-      setInputEnabled({...inputEnabled, password: !e.target.checked});
+      setinputDisabled({...inputDisabled, password: !e.target.checked});
       setPassword('');
     }
     else if (checkType === 'lifetime') {
-      setInputEnabled({...inputEnabled, lifetime: !e.target.checked});
+      setinputDisabled({...inputDisabled, lifetime: !e.target.checked});
       setLifeTime(defaultLifeTime);
     }
     else if (checkType === 'readlimit') {
-      setInputEnabled({...inputEnabled, readlimit: !e.target.checked});
+      setinputDisabled({...inputDisabled, readlimit: !e.target.checked});
       setReadLimit(defaultReadLimit);
     }
   }
@@ -81,27 +81,27 @@ const MessageForm = () => {
   return (
     <div className = 'formMessage'>
       <h2>Create a new message</h2>
-      <h4>If you do not want to use a password for extra protection, leave the field blank</h4>
+      <h4>You can choose the extra security measures below</h4>
       <form onSubmit={addMessage}>
-        <div> message: <div><textarea id = 'message' value ={message} onChange={({ target }) => setMessage(target.value)} rows={5} cols={30}/></div></div>
-        <div> password:<input id = 'password' value = {password} onChange={({ target }) => setPassword(target.value)} type='password' disabled = {inputEnabled.password}/>
-        <input type='checkbox' checked={!inputEnabled.password} onChange={e => handleCheckChange(e,'password')}/></div>
+        <div> Message: <div><textarea id = 'message' value ={message} onChange={({ target }) => setMessage(target.value)} rows={5} cols={30}/></div></div>
+        <div> Password:</div><div><input id = 'password' value = {password} onChange={({ target }) => setPassword(target.value)} type='password' disabled = {inputDisabled.password}/>
+        <input type='checkbox' checked={!inputDisabled.password} onChange={e => handleCheckChange(e,'password')}/></div>
 
-        <div> Lifetime D/H/M/S: <div>
-        <input id = 'lifetime_days' value ={lifeTime.days} onChange={e => handleLifeTimeChange(e,'days')} type = 'number' 
-        min = '0' max = '365' disabled = {inputEnabled.lifetime}/>
+        <div> Lifetime D/H/M/S: </div>
+        <div><input id = 'lifetime_days' value ={lifeTime.days} onChange={e => handleLifeTimeChange(e,'days')} type = 'number' 
+        min = '0' max = '365' disabled = {inputDisabled.lifetime}/>
         <input id = 'lifetime_hours' value ={lifeTime.hours} onChange={e => handleLifeTimeChange(e,'hours')} type = 'number' 
-        min = '0' max = '24' disabled = {inputEnabled.lifetime}/>
+        min = '0' max = '24' disabled = {inputDisabled.lifetime}/>
         <input id = 'lifetime_minutes' value ={lifeTime.minutes} onChange={e => handleLifeTimeChange(e,'minutes')} type = 'number' 
-        min = '0' max = '60' disabled = {inputEnabled.lifetime}/>
+        min = '0' max = '60' disabled = {inputDisabled.lifetime}/>
         <input id = 'lifetime_seconds' value ={lifeTime.seconds} onChange={e => handleLifeTimeChange(e,'seconds')} type = 'number' 
-        min = '0' max = '60' disabled = {inputEnabled.lifetime}/>
-        </div>
+        min = '0' max = '60' disabled = {inputDisabled.lifetime}/>
+        <input type='checkbox' checked={!inputDisabled.lifetime} onChange={e => handleCheckChange(e,'lifetime')}/></div>
+        
 
-        <input type='checkbox' checked={!inputEnabled.lifetime} onChange={e => handleCheckChange(e,'lifetime')}/></div>
-        <div> readlimit:<input id = 'readlimit' value = {readLimit} onChange={({ target }) => setReadLimit(target.value)} type="number" 
-        min = '1' max = '10000' disabled = {inputEnabled.readlimit}/>
-        <input type='checkbox' checked={!inputEnabled.readlimit} onChange={e => handleCheckChange(e,'readlimit')}/></div>
+        <div> ReadLimit:</div><div><input id = 'readlimit' value = {readLimit} onChange={({ target }) => setReadLimit(target.value)} type="number" 
+        min = '1' max = '10000' disabled = {inputDisabled.readlimit}/>
+        <input type='checkbox' checked={!inputDisabled.readlimit} onChange={e => handleCheckChange(e,'readlimit')}/></div>
         <button id = 'create-message' type='submit'>create</button>
       </form>
       <h4> When the message has been created, the url will be shown below</h4>
