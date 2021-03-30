@@ -5,9 +5,10 @@ const MessageView = ({url}) => {
   const [passwordInput, setPasswordInput] = useState('');
 
   const [message, setMessage] = useState('');
-  const [readLimit, setReadLimit] = useState({timesread: 0, readlimit: 10});
-  const [lifeTime, setLifeTime] = useState({timeleft: 10, timetotal: 10});
+  const [readLimit, setReadLimit] = useState({timesread: null, readlimit: null});
+  const [expiry, setExpiry] = useState(null);
   const [timeStamp, setTimeStamp] = useState('');
+  const [deletion, setDeletion] = useState(null);
 
   const [successful, setSuccess] = useState(false);
   const [exists, setExists] = useState(false);
@@ -31,8 +32,11 @@ const MessageView = ({url}) => {
         setMessage(data.message); 
         //define this as an array to save space? Could also be a dictionary for better mobility
         setReadLimit({timesread: data.timesRead, readlimit: data.readLimit})
-        //timer is currently not real time, to change input from seconds remove /1000 and do something
-        setLifeTime({timeleft: (data.lifetime - data.aliveTimeLeft)/1000, timetotal: data.lifetime/1000})
+        if(data.aliveTimeLeft !== null)
+        {
+          var time = new Date(data.timestamp + data.aliveTimeLeft);
+          setExpiry(time);
+        }
         //turns it into string timestamp
         setTimeStamp((new Date(data.timestamp)).toString())
         setSuccess(true);
@@ -42,14 +46,25 @@ const MessageView = ({url}) => {
       console.log(error);
     }
   }
-  useEffect( () => fetchMessage(null), []);
-
+  useEffect(() => {
+    fetchMessage(null);
+  }, []);
+  useEffect( () => {
+    if(expiry === null) return;
+    const id = setTimeout(() => {
+      const diff = new Date(expiry.getTime() - new Date().getTime());
+      if(diff.getTime() < 1000 * 1000 * 60 * 24) // only show the time until if the duration is under 24 hours
+        setDeletion(diff.getUTCHours() + ":" + diff.getUTCMinutes() + ":" + diff.getUTCSeconds());
+    }, 1000);
+    return () => clearInterval(id);
+  }, [expiry, deletion]);
+  
   return loading ?
     (<h2>Getting the message</h2>)
     : !exists ?
     (<h2>This URL does not contain any messages</h2>)
     : successful ?
-    (<ShowMsg msg={message} readlimit = {readLimit} lifetime = {lifeTime} timestamp = {timeStamp}/>)
+    (<ShowMsg msg={message} readlimit={readLimit} deletion={deletion} expiry={expiry} timestamp={timeStamp}/>)
     :
     (<PasswordInput onSubmit={submitPassword} handlePassword={handlePassword}passwordInput={passwordInput}/>)
 }
@@ -67,14 +82,27 @@ const PasswordInput = ({onSubmit, passwordInput, handlePassword}) => {
   )
 } 
 
-const ShowMsg = ({msg,readlimit,lifetime,timestamp}) => {
+const ShowMsg = ({msg, readlimit, deletion, expiry, timestamp}) => {
   return (
     <>
       <h2>Your secret message:</h2>
       <h4>{msg}</h4>
-      <p>This message has been accessed {readlimit.timesread}/{readlimit.readlimit} times</p>
-      <p>Time left until message is deleted {Math.round(lifetime.timeleft)}/{lifetime.timetotal} </p>
-      <p>Message created {timestamp} </p>
+      {readlimit.readlimit !== null
+      ? <p>This message has been accessed {readlimit.timesread}/{readlimit.readlimit} times</p>
+      : <p>This message has been accessed {readlimit.timesread} times</p>}
+      {expiry === null ? null : 
+      <>
+        <div>Message will be deleted on</div>
+        <div>{expiry.toString()}</div>
+        {deletion ?
+          <>
+            <div>Time until deletion</div>
+            <div>{deletion}</div>
+          </>
+        : null}
+      </>}
+      <div>Message created on</div>
+      <div>{timestamp}</div>
     </>
   )
 }

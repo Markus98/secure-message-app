@@ -16,7 +16,11 @@ const MessageForm = () => {
     try {
       //the response from backend is the URL to the message
       //lifetime is timed by 100 because its in milliseconds, could be done earlier too
-      const data = await messageService.create_message(message, password, lifeTime*1000, readLimit);
+      // If disabled don't pass onto the create_message function
+      if(inputDisabled.password) password = null;
+      if(inputDisabled.lifetime) lifeTime = null;
+      if(inputDisabled.readlimit) readLimit = null;
+      const data = await messageService.create_message(message, password, lifeTime * 1000, readLimit);
       console.log(data);
       const fullUrl = window.location.protocol + '//' + window.location.host + '/' + data.generatedUrl;
       setUrl(<a href={fullUrl}>{fullUrl}</a>);
@@ -28,7 +32,7 @@ const MessageForm = () => {
 
   function timeToSeconds(timeDict) {
     console.log(timeDict)
-    return ((((timeDict.days * 24 + timeDict.hours) * 60 + timeDict.minutes) * 60) + timeDict.seconds);
+    return ((((parseInt(timeDict.days) * 24 + parseInt(timeDict.hours)) * 60 + parseInt(timeDict.minutes)) * 60) + parseInt(timeDict.seconds));
   } 
 
   const addMessage = async (event) => {
