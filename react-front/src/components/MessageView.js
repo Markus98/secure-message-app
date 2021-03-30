@@ -53,7 +53,8 @@ const MessageView = ({url}) => {
     if(expiry === null) return;
     const id = setTimeout(() => {
       const diff = new Date(expiry.getTime() - new Date().getTime());
-      if(diff.getTime() < 1000 * 1000 * 60 * 24) // only show the time until if the duration is under 24 hours
+      console.log(diff.getTime())
+      if(diff.getTime() < 1000 * 60 * 60 * 24) // only show the time until if the duration is under 24 hours
         setDeletion(diff.getUTCHours() + ":" + diff.getUTCMinutes() + ":" + diff.getUTCSeconds());
     }, 1000);
     return () => clearInterval(id);
