@@ -31,10 +31,18 @@ router.post('/', async (req, res) => {
     const readLimit = req.body.readLimit;
     const generatedUrl = urlGenerator(urlLength);
     const timestamp = new Date().getTime()
-
-    // if the request has no message, reject it
+    
+    // if the request has no message, reject request
     if (!message) {
-        return res.sendStatus(400);
+        return res.status(400).send("No message in request body.");
+    }
+    // If lifetime or readLimit are not numbers, reject request
+    if ((lifetime && !Number.isInteger(lifetime)) || (readLimit && !Number.isInteger(readLimit))) {
+        return res.status(400).send("Parameter lifeTime or readLimit not an integer.");
+    }
+    // If password or message are not strings, reject request
+    if (typeof message != "string" || (password && typeof password != "string")) {
+        return res.status(400).send("Parameter message or password not a string.");
     }
 
     const urlHash = hashSHA256(generatedUrl);
@@ -64,13 +72,18 @@ router.post('/', async (req, res) => {
     });
 });
 
-// GET a specific message
+// POST get a specific message
 const getMessageQuery = 'SELECT * FROM messages WHERE url_hash = ?;';
 const incrementReadNumberQuery = 'UPDATE messages SET times_read = times_read + 1 WHERE url_hash = ?;';
 const deleteMessageQuery = 'DELETE FROM messages WHERE url_hash = ?;';
 router.post('/:url', async (req, res) => {
     const url = req.params.url;
     const password = req.body.password;
+
+    // If password not a string, reject request
+    if (password && typeof password != "string") {
+        return res.status(400).send("Parameter password not a string.");
+    }
 
     const urlHash = hashSHA256(url);
 
