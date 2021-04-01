@@ -34,7 +34,7 @@ Request body JSON:
     "generatedUrl": "<MESSAGE_URL>"
   }
   ```
-### **GET** `/api/<MESSAGE_URL>`
+### **POST** `/api/<MESSAGE_URL>`
 Get a secret message.
 
 Request body JSON (OPTIONAL):
