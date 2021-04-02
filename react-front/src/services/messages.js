@@ -1,5 +1,5 @@
 import axios from 'axios';
-const baseURL = 'http://localhost:3001/api/';
+const baseURL = '/api/';
 
 // create message to the server, all parameters are optional except msg
 const create_message = async (msg, password, lifetime, readLimit) => {

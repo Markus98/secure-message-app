@@ -21,7 +21,6 @@ const MessageForm = () => {
       if(inputDisabled.lifetime) lifeTime = null;
       if(inputDisabled.readlimit) readLimit = null;
       const data = await messageService.create_message(message, password, lifeTime * 1000, readLimit);
-      console.log(data);
       const fullUrl = window.location.protocol + '//' + window.location.host + '/' + data.generatedUrl;
       setUrl(<a href={fullUrl}>{fullUrl}</a>);
     }
@@ -31,7 +30,6 @@ const MessageForm = () => {
   }
 
   function timeToSeconds(timeDict) {
-    console.log(timeDict)
     return ((((parseInt(timeDict.days) * 24 + parseInt(timeDict.hours)) * 60 + parseInt(timeDict.minutes)) * 60) + parseInt(timeDict.seconds));
   } 
 
@@ -43,7 +41,7 @@ const MessageForm = () => {
         message: message,
         password: password,
         lifeTime: timeToSeconds(lifeTime),
-        readLimit: readLimit
+        readLimit: parseInt(readLimit)
       });
       setMessage('');
     }
@@ -88,22 +86,22 @@ const MessageForm = () => {
       <h4>You can choose the extra security measures below</h4>
       <form onSubmit={addMessage}>
         <div> Message: <div><textarea id = 'message' value ={message} onChange={({ target }) => setMessage(target.value)} rows={5} cols={30}/></div></div>
-        <div> Password:</div><div><input id = 'password' value = {password} onChange={({ target }) => setPassword(target.value)} type='password' disabled = {inputDisabled.password}/>
+        <div> Password:</div><div><input id = 'password' value = {password} onChange={({ target }) => setPassword(target.value)} type='password' disabled = {inputDisabled.password} hidden = {inputDisabled.password}/>
         <input type='checkbox' checked={!inputDisabled.password} onChange={e => handleCheckChange(e,'password')}/></div>
 
         <div> Lifetime D/H/M/S: </div>
         <div><input id = 'lifetime_days' value ={lifeTime.days} onChange={e => handleLifeTimeChange(e,'days')} type = 'number' 
-        min = '0' max = '365' disabled = {inputDisabled.lifetime}/>
+        min = '0' max = '365' disabled = {inputDisabled.lifetime} hidden = {inputDisabled.lifetime}/>
         <input id = 'lifetime_hours' value ={lifeTime.hours} onChange={e => handleLifeTimeChange(e,'hours')} type = 'number' 
-        min = '0' max = '24' disabled = {inputDisabled.lifetime}/>
+        min = '0' max = '24' disabled = {inputDisabled.lifetime} hidden = {inputDisabled.lifetime} />
         <input id = 'lifetime_minutes' value ={lifeTime.minutes} onChange={e => handleLifeTimeChange(e,'minutes')} type = 'number' 
-        min = '0' max = '60' disabled = {inputDisabled.lifetime}/>
+        min = '0' max = '60' disabled = {inputDisabled.lifetime} hidden = {inputDisabled.lifetime}/>
         <input id = 'lifetime_seconds' value ={lifeTime.seconds} onChange={e => handleLifeTimeChange(e,'seconds')} type = 'number' 
-        min = '0' max = '60' disabled = {inputDisabled.lifetime}/>
+        min = '0' max = '60' disabled = {inputDisabled.lifetime} hidden = {inputDisabled.lifetime}/>
         <input type='checkbox' checked={!inputDisabled.lifetime} onChange={e => handleCheckChange(e,'lifetime')}/></div>
         
         <div> ReadLimit:</div><div><input id = 'readlimit' value = {readLimit} onChange={({ target }) => setReadLimit(target.value)} type="number" 
-        min = '1' max = '10000' disabled = {inputDisabled.readlimit}/>
+        min = '1' max = '10000' disabled = {inputDisabled.readlimit} hidden = {inputDisabled.readlimit}/>
         <input type='checkbox' checked={!inputDisabled.readlimit} onChange={e => handleCheckChange(e,'readlimit')}/></div>
         <button id = 'create-message' type='submit'>create</button>
       </form>
