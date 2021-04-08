@@ -24,8 +24,10 @@ const encryptMsg = (password, msg) => {
     const salt = crypto.randomBytes(32).toString('hex');
     // create key
     const key = hashPassword(password, salt);
+    // create hash key
+    const hashkey = sha256(password);
     // create cipher
-    const cipher = crypto.createCipheriv(decipherAlgorithm, Buffer.from(key), iv);
+    const cipher = crypto.createCipheriv(decipherAlgorithm, hashkey, iv);
     // encrypt the msg
     const encryptedMsg = Buffer.concat([cipher.update(msg), cipher.final()]);
     // Returning iv and encrypted msg
@@ -42,18 +44,23 @@ const encryptMsg = (password, msg) => {
 // decrypt message using password, salt, inialization vector and content
 const decryptMsg = (password, salt, hash) => {
     // create key
-    const key = hashPassword(password, salt);
+    const hashkey = sha256(password);
     // create decipher
-    const decipher = crypto.createDecipheriv(decipherAlgorithm, key, Buffer.from(hash.iv, 'hex'));
+    const decipher = crypto.createDecipheriv(decipherAlgorithm, hashkey, Buffer.from(hash.iv, 'hex'));
     // decrypt
     const deryptedMsg = Buffer.concat([decipher.update(Buffer.from(hash.content, 'hex')), decipher.final()]);
     // return the plaint text msg
     return deryptedMsg.toString()
 }
 
-// simple sha256 hash
-const hashSHA256 = (msg) => {
-    return crypto.createHash('SHA256').update(msg).digest();
+// secure hash
+const hashSecure = (password) => {
+    return hashPassword(password, "");
+}
+
+// sha256
+const sha256 = (a) => {
+    return crypto.createHash('SHA256').update(a).digest();
 }
 
 /*
@@ -62,4 +69,4 @@ const {salt, hash} = encryptMsg('password', msg);
 console.log(decryptMsg('password', salt, hash));
 */
 
-module.exports = {encryptMsg, decryptMsg, hashSHA256, hashPassword};
+module.exports = {encryptMsg, decryptMsg, hashSHA256: hashSecure, hashPassword};
