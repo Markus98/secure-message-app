@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import messageService from '../services/messages';
+import PasswordStrengthBar from 'react-password-strength-bar';
 
 const defaultLifeTime = {days: 0, hours: 1, minutes: 0, seconds: 0};
 const defaultReadLimit = 10;
@@ -88,7 +89,7 @@ const MessageForm = () => {
         <div> Message: <div><textarea id = 'message' value ={message} onChange={({ target }) => setMessage(target.value)} rows={5} cols={30}/></div></div>
         <div> Password:</div><div><input id = 'password' value = {password} onChange={({ target }) => setPassword(target.value)} type='password' disabled = {inputDisabled.password} hidden = {inputDisabled.password}/>
         <input type='checkbox' checked={!inputDisabled.password} onChange={e => handleCheckChange(e,'password')}/></div>
-
+        <div hidden = {inputDisabled.password}><PasswordStrengthBar password={password} style={{width: '10%', padding: '0.1% 44.5%'}}/></div>
         <div> Lifetime D/H/M/S: </div>
         <div><input id = 'lifetime_days' value ={lifeTime.days} onChange={e => handleLifeTimeChange(e,'days')} type = 'number' 
         min = '0' max = '365' disabled = {inputDisabled.lifetime} hidden = {inputDisabled.lifetime}/>
