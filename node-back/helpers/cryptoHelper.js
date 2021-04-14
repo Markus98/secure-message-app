@@ -8,11 +8,14 @@ const hashNumber = process.env.HASH_NUMBER || 1;
 // hash the password with the provided salt
 const hashPassword = (password, salt) => {
     // generate password hash
-    let key = pepper + password + salt;
+    let k = pepper + password + salt;
     for(i = 0; i < hashNumber; i++) {
-        key = crypto.createHash(hashAlgorithm).update(key).digest();
+        k = crypto.createHash(hashAlgorithm).update(k).digest();
     }
-    return key;
+    const len = k.length;
+    const key = sha256(k.slice(0, len / 2));
+    const hmac = k.slice(len / 2, len).toString('hex');
+    return {key, hmac};
 }
 
 // encrypt message with the password
@@ -22,12 +25,10 @@ const encryptMsg = (password, msg) => {
     const iv = crypto.randomBytes(16);
     // create salt
     const salt = crypto.randomBytes(32).toString('hex');
-    // create key
-    const key = hashPassword(password, salt);
-    // create hash key
-    const hashkey = sha256(password);
+    // create key and hmac
+    const {key, hmac} = hashPassword(password, salt);
     // create cipher
-    const cipher = crypto.createCipheriv(decipherAlgorithm, hashkey, iv);
+    const cipher = crypto.createCipheriv(decipherAlgorithm, key, iv);
     // encrypt the msg
     const encryptedMsg = Buffer.concat([cipher.update(msg), cipher.final()]);
     // Returning iv and encrypted msg
@@ -37,16 +38,20 @@ const encryptMsg = (password, msg) => {
             iv: iv.toString('hex'), 
             content: encryptedMsg.toString('hex')
         },
-        key
+        hmac
     };
 }
 
 // decrypt message using password, salt, inialization vector and content
-const decryptMsg = (password, salt, hash) => {
-    // create key
-    const hashkey = sha256(password);
+const decryptMsg = (password, salt, hash, hmac_v) => {
+    // create key and hmac
+    const {key, hmac} = hashPassword(password, salt);
+    // check the hmac
+    if(hmac !== hmac_v) {
+        throw "Incorrect hmac";
+    }
     // create decipher
-    const decipher = crypto.createDecipheriv(decipherAlgorithm, hashkey, Buffer.from(hash.iv, 'hex'));
+    const decipher = crypto.createDecipheriv(decipherAlgorithm, key, Buffer.from(hash.iv, 'hex'));
     // decrypt
     const deryptedMsg = Buffer.concat([decipher.update(Buffer.from(hash.content, 'hex')), decipher.final()]);
     // return the plaint text msg
@@ -69,4 +74,4 @@ const {salt, hash} = encryptMsg('password', msg);
 console.log(decryptMsg('password', salt, hash));
 */
 
-module.exports = {encryptMsg, decryptMsg, hashSHA256: hashSecure, hashPassword};
+module.exports = {encryptMsg, decryptMsg, hashSHA256: sha256};

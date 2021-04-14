@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
-const { encryptMsg, decryptMsg, hashSHA256, hashPassword } = require('../helpers/cryptoHelper');
+const { encryptMsg, decryptMsg, hashSHA256 } = require('../helpers/cryptoHelper');
 const urlGenerator = require("../helpers/urlGenerator");
 
 //could be also given from the frontend
@@ -23,7 +23,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 // POST a single message
-const insertMessageQuery = 'INSERT INTO messages(url_hash, password_protected, message_cipher, password_hash, salt, timestamp, lifetime, read_limit, init_vector) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);';
+const insertMessageQuery = 'INSERT INTO messages(url_hash, password_protected, message_cipher, hmac, salt, timestamp, lifetime, read_limit, init_vector) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);';
 router.post('/', async (req, res) => {
     const password = req.body.password;
     const message = req.body.message;
@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
         urlHash,
         password !== undefined, // has password or not
         cipherObj.hash.content,
-        cipherObj.key,
+        cipherObj.hmac,
         cipherObj.salt,
         timestamp,
         lifetime,
@@ -114,24 +114,24 @@ router.post('/:url', async (req, res) => {
             content: row.message_cipher
         }
 
-        // check if the message requires a password
-        if (row.password_protected) {
-            // Send unauthorized if no password provided
-            if (!password) {
-                return res.sendStatus(401);
+        try {
+            // check if the message requires a password
+            if (row.password_protected) {
+                // Send unauthorized if no password provided
+                if (!password) {
+                    return res.sendStatus(401);
+                }
+    
+                // TODO: limit number of attempts
+                responseObj["message"] = decryptMsg(password, row.salt, hashObj, row.hmac);
+            } else {
+    
+                responseObj["message"] = decryptMsg(urlHash, row.salt, hashObj, row.hmac);
             }
-
-            // Check if correct password 
-            // TODO: limit number of attempts
-            const receivedPasswordHash = hashPassword(password, row.salt);
-            if (receivedPasswordHash.toString() !== row.password_hash.toString()) {
-                return res.sendStatus(403);
-            }
-
-            responseObj["message"] = decryptMsg(password, row.salt, hashObj);
-        } else {
-
-            responseObj["message"] = decryptMsg(urlHash, row.salt, hashObj);
+        } catch (error) {
+            // wrong password
+            console.log(error);
+            return res.sendStatus(403);
         }
 
         // Increment read number and send reponse
