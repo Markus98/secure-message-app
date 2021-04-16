@@ -8,9 +8,12 @@ const hashNumber = process.env.HASH_NUMBER || 1;
 // hash the password with the provided salt
 const hashPassword = (password, salt) => {
     // generate password hash
-    let k = pepper + password + salt;
-    for(i = 0; i < hashNumber; i++) {
-        k = crypto.createHash(hashAlgorithm).update(k).digest();
+    let k = password + salt;
+    for(i = 0; i < hashNumber / 2; i++) {
+        k = crypto.createHash(hashAlgorithm).update(k + salt).digest();
+    }
+    for(i = 0; i < hashNumber / 2; i++) {
+        k = crypto.createHash(hashAlgorithm).update(k + pepper).digest();
     }
     const len = k.length;
     const key = sha256(k.slice(0, len / 2));
