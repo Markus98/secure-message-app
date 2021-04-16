@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
-const { encryptMsg, decryptMsg, hashSHA256 } = require('../helpers/cryptoHelper');
+const { encryptMsg, decryptMsg, hashSHA256, hashSecure } = require('../helpers/cryptoHelper');
 const urlGenerator = require("../helpers/urlGenerator");
 
 //could be also given from the frontend
@@ -45,13 +45,13 @@ router.post('/', async (req, res) => {
         return res.status(400).send("Parameter message or password not a string.");
     }
 
-    const urlHash = hashSHA256(generatedUrl);
+    const {key: urlKey, hmac: urlHmac} = hashSecure(generatedUrl);
     // encrypt message with the password or url hash
     const cipherObj = 
-        password ? encryptMsg(password, message) : encryptMsg(urlHash, message);
+        password ? encryptMsg(password, message) : encryptMsg(urlKey, message);
 
     db.run(insertMessageQuery, [
-        urlHash,
+        urlHmac,
         password !== undefined, // has password or not
         cipherObj.hash.content,
         cipherObj.hmac,
@@ -85,9 +85,9 @@ router.post('/:url', async (req, res) => {
         return res.status(400).send("Parameter password not a string.");
     }
 
-    const urlHash = hashSHA256(url);
+    const {key: urlKey, hmac: urlHmac} = hashSecure(url);
 
-    db.get(getMessageQuery, [urlHash], (err, row) => {
+    db.get(getMessageQuery, [urlHmac], (err, row) => {
         if (err) {
             console.log(err);
             return res.sendStatus(500);
@@ -126,7 +126,7 @@ router.post('/:url', async (req, res) => {
                 responseObj["message"] = decryptMsg(password, row.salt, hashObj, row.hmac);
             } else {
     
-                responseObj["message"] = decryptMsg(urlHash, row.salt, hashObj, row.hmac);
+                responseObj["message"] = decryptMsg(urlKey, row.salt, hashObj, row.hmac);
             }
         } catch (error) {
             // wrong password
@@ -135,7 +135,7 @@ router.post('/:url', async (req, res) => {
         }
 
         // Increment read number and send reponse
-        db.run(incrementReadNumberQuery, [urlHash], (err) => {
+        db.run(incrementReadNumberQuery, [urlHmac], (err) => {
             if (err) {
                 console.log(err);
                 return res.sendStatus(500);
@@ -144,12 +144,12 @@ router.post('/:url', async (req, res) => {
                 const lifeLimitReached = row.lifetime && timeAlive > row.lifetime;
                 // Delete row if read read limit reached or past lifetime
                 if (lifeLimitReached) {
-                    db.run(deleteMessageQuery, [urlHash], (err) => {
+                    db.run(deleteMessageQuery, [urlHmac], (err) => {
                         if (err) console.log(err);
                         return res.sendStatus(404);
                     });
                 } else if (readLimitReached) {
-                    db.run(deleteMessageQuery, [urlHash], (err) => {
+                    db.run(deleteMessageQuery, [urlHmac], (err) => {
                         if (err) console.log(err);
                         return res.json(responseObj);
                     });
