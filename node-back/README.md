@@ -1,14 +1,16 @@
 # Secure Messaging App Back End
 
-## Encryption Idea
-Secret message with password:
-- message encrypted with hashed password as key
-- password is not hashed plainly, instead hash something like hash(pepper + password + salt)
-- URL is random generated and the hash of it is used to identify a row in the database
+To install node modules before first run:
+```
+npm install
+```
 
-Secret message without password:
-- URL is random generated and the hash is used to identify a row in the database
-- the key to the crypted message is the original random url
+Back end can then be started with:
+```
+npm start
+```
+
+The back end will start with the port `3001` by default.
 
 ## API paths
 ### **POST** `/api`
@@ -62,8 +64,4 @@ Required if message requires a password.
     "message": "This is a test secret message"
   }
   ```
-### **DELETE** `/api/<MESSAGE_URL>`
-Delete a secret message.
-
-**Not yet implemented.**
 
